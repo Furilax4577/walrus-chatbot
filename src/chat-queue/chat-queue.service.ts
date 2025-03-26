@@ -8,7 +8,7 @@ export class ChatQueueService {
   constructor() {
     this.queue = new Queue('chat', {
       connection: {
-        host: 'localhost',
+        host: process.env.REDIS_HOST || 'localhost',
         port: 6379,
       },
     });

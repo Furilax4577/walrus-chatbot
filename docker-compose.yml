@@ -4,12 +4,12 @@ services:
     ports:
       - '6379:6379'
 
-  chroma:
-    image: chromadb/chroma:latest
-    volumes:
-      - ./chroma-data:/chroma/chroma
-    ports:
-      - '8000:8000'
+  # chroma:
+  #   image: chromadb/chroma:latest
+  #   volumes:
+  #     - ./chroma-data:/chroma/chroma
+  #   ports:
+  #     - '8000:8000'
 
   chatbot-api:
     build: .
@@ -17,8 +17,8 @@ services:
       - '3000:3000'
     depends_on:
       - redis
-      - chroma
+      # - chroma
     environment:
-      - REDIS_HOST=host.docker.internal
-      - CHROMA_HOST=http://host.docker.internal:8000
+      - REDIS_HOST=redis
+      # - CHROMA_HOST=http://host.docker.internal:8000
       - OLLAMA_HOST=http://host.docker.internal:11434
