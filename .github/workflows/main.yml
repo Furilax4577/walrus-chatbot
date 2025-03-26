@@ -32,12 +32,10 @@ jobs:
             -e "ssh -i ~/.ssh/id_ed25519" \
             ./ $VPS_USER@$VPS_IP:$VPS_DEPLOY_PATH
 
-      - name: 🐳 Redémarrer les services avec Docker Compose
+      - name: 🐳 Déployer le conteneur via Docker Compose
         run: |
           ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_IP << EOF
             set -e
             cd $VPS_DEPLOY_PATH
-            docker compose pull || true
-            docker compose down
             docker compose up -d --build
           EOF
