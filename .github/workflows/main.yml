@@ -1,1 +1,42 @@
+name: Deploy Chatbot to VPS via Docker
 
+on:
+  push:
+    branches:
+      - main
+
+env:
+  VPS_DEPLOY_PATH: /root/www/walrus-chatbox/
+  VPS_USER: ${{ secrets.VPS_USER }}
+  VPS_IP: ${{ secrets.VPS_IP }}
+  SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Cloner le dépôt
+        uses: actions/checkout@v3
+
+      - name: 🔑 Configurer la clé SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t ed25519 $VPS_IP >> ~/.ssh/known_hosts
+
+      - name: 📦 Copier les fichiers vers la VPS
+        run: |
+          rsync -azP --delete \
+            -e "ssh -i ~/.ssh/id_ed25519" \
+            ./ $VPS_USER@$VPS_IP:$VPS_DEPLOY_PATH
+
+      - name: 🐳 Redémarrer les services avec Docker Compose
+        run: |
+          ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_IP << EOF
+          cd $VPS_DEPLOY_PATH
+          docker compose pull || true
+          docker compose down
+          docker compose up -d --build
+          EOF
