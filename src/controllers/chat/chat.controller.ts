@@ -1,5 +1,5 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { ChatQueueService } from 'src/chat-queue/chat-queue.service';
+import { ChatQueueService } from 'src/services/chat-queue/chat-queue.service';
 
 @Controller('chat')
 export class ChatController {

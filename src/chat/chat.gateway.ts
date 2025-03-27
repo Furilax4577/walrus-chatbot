@@ -7,7 +7,7 @@ import {
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
-import { ChatQueueService } from './../chat-queue/chat-queue.service';
+import { ChatQueueService } from '../services/chat-queue/chat-queue.service';
 
 @WebSocketGateway({ cors: true })
 export class ChatGateway implements OnGatewayDisconnect {

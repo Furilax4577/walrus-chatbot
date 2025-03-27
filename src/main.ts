@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { IoAdapter } from '@nestjs/platform-socket.io';
-import { startChatWorker } from './worker';
+import { startChatWorker } from './workers/worker';
 import { ChatGateway } from './chat/chat.gateway';
 
 async function bootstrap() {

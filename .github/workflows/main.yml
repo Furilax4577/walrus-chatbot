@@ -9,11 +9,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     environment: main
+
     env:
       VPS_DEPLOY_PATH: /root/www/walrus-chatbot
       VPS_USER: ${{ secrets.VPS_USER }}
       VPS_IP: ${{ secrets.VPS_IP }}
       SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
 
     steps:
       - name: 📥 Cloner le dépôt
@@ -26,16 +29,29 @@ jobs:
           chmod 600 ~/.ssh/id_ed25519
           ssh-keyscan -t ed25519 $VPS_IP >> ~/.ssh/known_hosts
 
-      - name: 📦 Copier les fichiers vers la VPS
+      - name: 📦 Copier les fichiers vers la VPS (rsync)
         run: |
           rsync -azP --delete --exclude=node_modules \
             -e "ssh -i ~/.ssh/id_ed25519" \
             ./ $VPS_USER@$VPS_IP:$VPS_DEPLOY_PATH
 
-      - name: 🐳 Déployer le conteneur via Docker Compose
+      - name: 📝 Générer le fichier .env sur la VPS
         run: |
-          ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_IP << EOF
-            set -e
-            cd $VPS_DEPLOY_PATH
-            docker compose up -d --build
+          ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_IP <<EOF
+          set -e
+          cd $VPS_DEPLOY_PATH
+
+          cat > .env <<EOT
+          OPENAI_API_KEY=${OPENAI_API_KEY}
+          OPENAI_MODEL=${OPENAI_MODEL}
+          EOT
+          EOF
+
+      - name: 🐳 Démarrer le conteneur via Docker Compose
+        run: |
+          ssh -i ~/.ssh/id_ed25519 $VPS_USER@$VPS_IP <<EOF
+          set -e
+          cd $VPS_DEPLOY_PATH
+
+          docker compose up -d --build
           EOF

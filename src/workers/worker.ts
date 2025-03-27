@@ -1,15 +1,17 @@
 import { Worker } from 'bullmq';
-import axios from 'axios';
-import { ChatGateway } from './chat/chat.gateway';
 import * as fs from 'fs';
 import * as path from 'path';
+import { ChatGateway } from '../chat/chat.gateway';
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from '../app.module';
+import { OpenaiService } from 'src/services/openai/openai.service';
 
 let knowledgeChunks: string[] = [];
 
 function loadKnowledgeFile() {
   const filePath = path.resolve(
     __dirname,
-    '../data/albatros_cleaned_filtered.txt',
+    '../../data/albatros_cleaned_filtered.txt',
   );
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
@@ -42,8 +44,11 @@ function getRelevantChunks(userInput: string, limit = 3): string[] {
     .map((s) => s.chunk);
 }
 
-export function startChatWorker(gateway: ChatGateway) {
+export async function startChatWorker(gateway: ChatGateway) {
   loadKnowledgeFile();
+
+  const app = await NestFactory.createApplicationContext(AppModule);
+  const openaiService = app.get(OpenaiService);
 
   const worker = new Worker(
     'chat',
@@ -73,16 +78,10 @@ export function startChatWorker(gateway: ChatGateway) {
           ...messages,
         ];
 
-        const ollamaUrl = process.env.OLLAMA_HOST || 'http://localhost:11434';
-        const response = await axios.post(`${ollamaUrl}/api/chat`, {
-          model: 'mistral:instruct',
-          messages: augmentedMessages,
-          stream: false,
-        });
+        const message =
+          await openaiService.generateChatResponse(augmentedMessages);
 
-        const message = response.data.message.content;
         console.log(`💬 Réponse pour ${clientId} :`, message);
-
         gateway.sendMessageToClient(clientId, message);
 
         return message;
