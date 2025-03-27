@@ -27,6 +27,18 @@ export class ChatGateway implements OnGatewayDisconnect {
     client.join(clientId);
     this.socketClientMap.set(client.id, clientId);
     console.log(`👥 Client ${client.id} joined room ${clientId}`);
+
+    // 👋 Message de bienvenue automatique
+    const welcomeMessage = `Bonjour 👋 Je suis Albatar, l’assistant Studio Albatros.
+  Souhaitez-vous créer un site vitrine, présenter votre activité, ou poser une question ? 😊`;
+
+    const buttons = [
+      '🌐 Créer un site vitrine',
+      '🎯 Gagner en visibilité',
+      '❓ Poser une question',
+    ];
+
+    this.sendMessageToClient(clientId, welcomeMessage, buttons);
   }
 
   @SubscribeMessage('user-message')
@@ -52,8 +64,11 @@ export class ChatGateway implements OnGatewayDisconnect {
     }
   }
 
-  sendMessageToClient(clientId: string, message: string) {
-    this.server.to(clientId).emit('chat-response', { message });
+  sendMessageToClient(clientId: string, message: string, buttons?: string[]) {
+    this.server.to(clientId).emit('chat-response', {
+      message,
+      buttons: buttons ?? [],
+    });
   }
 
   sendErrorToClient(clientId: string, error: string) {

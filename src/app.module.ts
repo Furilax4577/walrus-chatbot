@@ -5,6 +5,8 @@ import { ChatModule } from './chat/chat.module';
 import { ChatQueueService } from './services/chat-queue/chat-queue.service';
 import { OpenaiService } from './services/openai/openai.service';
 import { ConfigModule } from '@nestjs/config';
+import { ChatContextService } from './services/chat-context/chat-context.service';
+
 import appConfig from './app.config';
 
 @Module({
@@ -16,6 +18,6 @@ import appConfig from './app.config';
     }),
   ],
   controllers: [AppController],
-  providers: [AppService, ChatQueueService, OpenaiService],
+  providers: [AppService, ChatQueueService, OpenaiService, ChatContextService],
 })
 export class AppModule {}
