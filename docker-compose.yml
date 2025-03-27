@@ -20,5 +20,5 @@ services:
       # - chroma
     environment:
       - REDIS_HOST=redis
-      # - CHROMA_HOST=http://host.docker.internal:8000
       - OLLAMA_HOST=http://host.docker.internal:11434
+      # - CHROMA_HOST=http://host.docker.internal:8000
