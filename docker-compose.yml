@@ -10,11 +10,6 @@ services:
       - '3000:3000'
     depends_on:
       - redis
-      - ollama
-      - ollama-init
     environment:
       - REDIS_HOST=redis
       - OLLAMA_HOST=https://ollama.walrus-labs.fr
-
-volumes:
-  ollama-models:
