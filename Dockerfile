@@ -19,7 +19,7 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 # Copie des données (RAG)
-COPY --from=builder /app/data ./dist/chat/data
+COPY --from=builder /app/data ./data
 
 ENV NODE_ENV=production
 ENV PORT=3000
