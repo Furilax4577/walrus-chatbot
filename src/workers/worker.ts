@@ -6,23 +6,23 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from '../app.module';
 import { OpenaiService } from 'src/services/openai/openai.service';
 
-let knowledgeChunks: string[] = [];
+interface KnowledgeChunk {
+  id: string;
+  text: string;
+  tokens: number;
+}
+
+let knowledgeChunks: KnowledgeChunk[] = [];
 
 function loadKnowledgeFile() {
-  const filePath = path.resolve(
-    __dirname,
-    '../../data/albatros_cleaned_filtered.txt',
-  );
+  const filePath = path.resolve(__dirname, '../../data/rag_chunks.json');
   try {
     const raw = fs.readFileSync(filePath, 'utf-8');
-    knowledgeChunks = raw
-      .split(/\n\s*\n/) // Séparer par paragraphes
-      .map((chunk) => chunk.trim())
-      .filter((chunk) => chunk.length > 0);
-    console.log(`📚 ${knowledgeChunks.length} blocs de connaissance chargés.`);
+    knowledgeChunks = JSON.parse(raw);
+    console.log(`📚 ${knowledgeChunks.length} chunks de connaissance chargés.`);
   } catch (error) {
     console.error(
-      '❌ Erreur lors du chargement du fichier de connaissance :',
+      '❌ Erreur lors du chargement du fichier RAG :',
       error.message,
     );
   }
@@ -33,9 +33,9 @@ function getRelevantChunks(userInput: string, limit = 3): string[] {
   const scores = knowledgeChunks.map((chunk) => {
     let score = 0;
     input.split(/\s+/).forEach((word) => {
-      if (chunk.toLowerCase().includes(word)) score++;
+      if (chunk.text.toLowerCase().includes(word)) score++;
     });
-    return { chunk, score };
+    return { chunk: chunk.text, score };
   });
 
   return scores
@@ -61,9 +61,6 @@ export async function startChatWorker(gateway: ChatGateway) {
         const contextChunks = getRelevantChunks(lastUserMessage);
 
         if (contextChunks.length === 0) {
-          console.log(
-            `📭 Aucun contexte trouvé pour ${clientId}, redirection humaine.`,
-          );
           const message =
             "Nous n'avons pas trouvé de réponse automatique à votre question. Votre message a été transmis à notre équipe, nous reviendrons vers vous rapidement.";
           gateway.sendMessageToClient(clientId, message);
@@ -80,16 +77,9 @@ export async function startChatWorker(gateway: ChatGateway) {
 
         const message =
           await openaiService.generateChatResponse(augmentedMessages);
-
-        console.log(`💬 Réponse pour ${clientId} :`, message);
         gateway.sendMessageToClient(clientId, message);
-
         return message;
       } catch (error) {
-        console.error(
-          `❌ Erreur pendant le traitement du job pour ${clientId} :`,
-          error.message,
-        );
         gateway.sendErrorToClient(clientId, error.message);
         throw new Error(
           `Erreur de traitement pour ${clientId} : ${error.message}`,
