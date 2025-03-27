@@ -70,7 +70,7 @@ export async function startChatWorker(gateway: ChatGateway) {
         const augmentedMessages = [
           {
             role: 'system',
-            content: `Tu es un assistant pour le client ${clientId}. Voici des informations utiles :\n\n${contextChunks.join('\n\n')}\n\nTu dois répondre :\n- en français uniquement\n- en Markdown clair (titres, listes, gras, liens…)\n- de façon concise (3 à 6 phrases max)\n- et si besoin, poser une question pour mieux affiner la réponse.`,
+            content: `Tu es un assistant pour le client Studio Albatros. Voici des informations utiles :\n\n${contextChunks.join('\n\n')}\n\nTu dois répondre :\n- en français uniquement\n- en Markdown clair (titres, listes, gras, liens…)\n- de façon concise (3 à 6 phrases max)\n- et si besoin, poser une question pour mieux affiner la réponse.`,
           },
           ...messages,
         ];
