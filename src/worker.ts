@@ -75,7 +75,7 @@ export function startChatWorker(gateway: ChatGateway) {
 
         const ollamaUrl = process.env.OLLAMA_HOST || 'http://localhost:11434';
         const response = await axios.post(`${ollamaUrl}/api/chat`, {
-          model: 'phi4',
+          model: 'mistral:instruct',
           messages: augmentedMessages,
           stream: false,
         });

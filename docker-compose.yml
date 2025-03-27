@@ -3,12 +3,40 @@ services:
     image: redis:7
     ports:
       - '6379:6379'
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama-models:/root/.ollama
+
+  ollama-init:
+    image: curlimages/curl:latest
+    depends_on:
+      - ollama
+    entrypoint: >
+      sh -c '
+        echo "⏳ Attente de Ollama...";
+        until curl -s http://ollama:11434; do sleep 2; done;
+        echo "📥 Pull mistral:instruct...";
+        curl -X POST http://ollama:11434/api/pull \
+             -H "Content-Type: application/json" \
+             -d "{\"name\":\"mistral:instruct\"}";
+        echo "✅ Modèle téléchargé avec succès.";
+      '
   chatbot-api:
     build: .
     ports:
       - '3000:3000'
     depends_on:
       - redis
+      - ollama
+      - ollama-init
     environment:
       - REDIS_HOST=redis
-      - OLLAMA_HOST=http://host.docker.internal:11434
+      - OLLAMA_HOST=http://ollama:11434
+
+volumes:
+  ollama-models:
