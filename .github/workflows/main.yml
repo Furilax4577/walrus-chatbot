@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: main
     env:
-      VPS_DEPLOY_PATH: /root/www/walrus-chatbox/
+      VPS_DEPLOY_PATH: /root/www/walrus-chatbot
       VPS_USER: ${{ secrets.VPS_USER }}
       VPS_IP: ${{ secrets.VPS_IP }}
       SSH_KEY: ${{ secrets.VPS_SSH_KEY }}
